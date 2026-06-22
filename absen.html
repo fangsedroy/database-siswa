@@ -3,158 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Presensi & Cek Kehadiran Siswa</title>
+    <title>Cek Kehadiran Siswa Mandiri</title>
     <style>
         html, body { 
             margin: 0; padding: 0; background-color: #f4f7f6; font-family: Arial, sans-serif; 
         }
         .container {
-            max-width: 600px; margin: 0 auto; padding: 20px; box-sizing: border-box;
+            max-width: 550px; margin: 0 auto; padding: 20px; box-sizing: border-box;
         }
-        h1, h2 { text-align: center; color: #333; margin-bottom: 5px; }
+        h1 { text-align: center; color: #0d6efd; margin-bottom: 5px; font-size: 24px; }
         .sub-title { text-align: center; color: #666; font-size: 14px; margin-bottom: 25px; }
         
         .card {
-            background: white; padding: 20px; border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08); margin-bottom: 20px;
+            background: white; padding: 25px; border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06); margin-bottom: 20px;
         }
         
-        label { font-weight: bold; font-size: 14px; color: #444; display: block; margin-bottom: 8px; }
-        input[type="text"], select {
-            width: 100%; padding: 12px; font-size: 16px; border: 1px solid #ccc;
-            border-radius: 6px; box-sizing: border-box; outline: none; margin-bottom: 15px;
-        }
+        label { font-weight: bold; font-size: 15px; color: #333; display: block; margin-bottom: 10px; }
         
-        .btn {
-            width: 100%; padding: 12px; font-size: 16px; font-weight: bold;
-            color: white; border: none; border-radius: 6px; cursor: pointer;
+        input[type="text"] {
+            width: 100%; padding: 14px; font-size: 16px; border: 2px solid #0d6efd;
+            border-radius: 8px; box-sizing: border-box; outline: none;
+            transition: 0.2s;
         }
-        .btn-success { background-color: #198754; }
-        .btn-primary { background-color: #0d6efd; margin-top: 5px; }
-
-        .status-badge {
-            display: inline-block; padding: 5px 12px; font-weight: bold; border-radius: 20px; font-size: 13px;
+        input[type="text"]:focus {
+            box-shadow: 0 0 8px rgba(13, 110, 253, 0.3);
         }
-        .status-hadir { background-color: #d1e7dd; color: #0f5132; }
-        .status-belum { background-color: #fff3cd; color: #664d03; }
 
-        /* Hasil Pencarian Orang Tua */
+        /* Hasil Filter Pencarian Nama */
         .siswa-item {
             border-bottom: 1px solid #eee; padding: 15px 0;
             display: flex; justify-content: space-between; align-items: center;
+            animation: fadeIn 0.3s ease;
         }
-        .siswa-info { font-size: 15px; }
-        .siswa-nama { font-weight: bold; color: #222; }
-        .siswa-rombel { font-size: 12px; color: #777; margin-top: 3px; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .siswa-info { font-size: 15px; padding-right: 10px; }
+        .siswa-nama { font-weight: bold; color: #222; text-transform: uppercase; font-size: 14px; }
+        .siswa-rombel { font-size: 12px; color: #777; margin-top: 4px; }
 
-        .loading { text-align: center; font-size: 16px; color: #666; padding: 20px 0; }
-        #pesanRespon { text-align: center; font-weight: bold; margin-top: 10px; padding: 10px; border-radius: 5px; display: none; }
+        .status-badge {
+            display: inline-block; padding: 6px 14px; font-weight: bold; border-radius: 20px; font-size: 12.5px;
+            white-space: nowrap;
+        }
+        .status-hadir { background-color: #d1e7dd; color: #0f5132; border: 1px solid #badbcc; }
+        .status-belum { background-color: #fff3cd; color: #664d03; border: 1px solid #ffe69c; }
+
+        .loading { text-align: center; font-size: 15px; color: #666; padding: 20px 0; font-weight: bold; }
+        .info-bawah { text-align: center; font-size: 12px; color: #999; margin-top: 20px; }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>E-Absen & Cek Kehadiran</h1>
-        <p class="sub-title">Halaman Informasi Kehadiran Siswa Hari Ini</p>
-
-        <div class="card" id="fiturGuru">
-            <h2>Menu Input Absen Guru</h2>
-            <div id="pesanRespon"></div>
-            
-            <label for="inputID">Scan Barcode (NISN) / Ketik Nama Siswa:</label>
-            <input type="text" id="inputID" placeholder="Scan barcode kartu atau ketik nama..." autofocus>
-            
-            <label for="statusAbsen">Status Kehadiran:</label>
-            <select id="statusAbsen">
-                <option value="Hadir">Hadir</option>
-                <option value="Izin">Izin</option>
-                <option value="Sakit">Sakit</option>
-            </select>
-            
-            <button class="btn btn-success" onclick="kirimDataAbsen()">Simpan Kehadiran</button>
-        </div>
+        <h1>Monitoring Presensi Siswa</h1>
+        <p class="sub-title">Papan Informasi Kehadiran Realtime Sekolah</p>
 
         <div class="card">
-            <h2>Cek Kehadiran (Orang Tua)</h2>
-            <label for="cariNamaSiswa">Cari Nama Anak Anda:</label>
-            <input type="text" id="cariNamaSiswa" oninput="pencarianAbsen()" placeholder="Ketik nama lengkap anak...">
+            <label for="cariNamaSiswa">Cari Nama Lengkap Anak:</label>
+            <input type="text" id="cariNamaSiswa" oninput="pencarianAbsen()" placeholder="Ketik nama anak di sini...">
             
-            <div id="loadingAbsen" class="loading" style="display: none;">Mencari data...</div>
+            <div id="loadingAbsen" class="loading">⏳ Menghubungkan ke server data sekolah...</div>
+            
             <div id="hasilPencarian">
                 </div>
         </div>
+        
+        <p class="info-bawah">Data diperbarui otomatis mengikuti jam masuk sekolah.</p>
     </div>
 
     <script>
-        // MASUKKAN URL WEB APPS SCRIPT ANDA DI SINI
+        // MASUKKAN URL WEB APPS SCRIPT BARU ANDA DI SINI
         const API_URL = "https://script.google.com/macros/s/AKfycbzgDnKpNjqtRxiGJVW5LDP0q9tOF1IhlZreR4oPK6WPRBXhQzSYQk7pcAxvQaKvkFdhUw/exec";
         
         let semuaSiswa = [];
         let timerPencarian;
 
-        // Ambil data gabungan siswa dan status kehadiran hari ini
+        // Ambil data gabungan siswa dari database utama & status absen hari ini
         async function muatDataSiswa() {
             try {
-                document.getElementById('loadingAbsen').style.display = 'block';
-                const respon = await fetch(API_URL + "?action=getSiswa");
+                const respon = await fetch(API_URL);
                 semuaSiswa = await respon.json();
                 document.getElementById('loadingAbsen').style.display = 'none';
             } catch (error) {
                 console.error("Gagal memuat data:", error);
+                document.getElementById('loadingAbsen').innerText = "❌ Gagal memuat database sekolah.";
             }
         }
 
-        // Fungsi Guru: Kirim Absen lewat Barcode / Ketik Manual Nama
-        async function kirimDataAbsen() {
-            const idInput = document.getElementById('inputID').value.trim();
-            const statusInput = document.getElementById('statusAbsen').value;
-            const kotakPesan = document.getElementById('pesanRespon');
-            
-            if(!idInput) {
-                alert("Silakan scan barcode atau ketik nama siswa terlebih dahulu!");
-                return;
-            }
-
-            kotakPesan.style.display = "block";
-            kotakPesan.style.backgroundColor = "#e2e3e5";
-            kotakPesan.style.color = "#383d41";
-            kotakPesan.innerText = "Sedang menyimpan...";
-
-            try {
-                const respon = await fetch(`${API_URL}?action=absen&id=${encodeURIComponent(idInput)}&status=${statusInput}`);
-                const hasil = await respon.json();
-                
-                if(hasil.success) {
-                    kotakPesan.style.backgroundColor = "#d1e7dd";
-                    kotakPesan.style.color = "#0f5132";
-                    document.getElementById('inputID').value = ""; // Bersihkan kolom agar siap scan berikutnya
-                    document.getElementById('inputID').focus();
-                    muatDataSiswa(); // Refresh data tampilan orang tua
-                } else {
-                    kotakPesan.style.backgroundColor = "#fff3cd";
-                    kotakPesan.style.color = "#664d03";
-                }
-                kotakPesan.innerText = hasil.message;
-            } catch (error) {
-                kotakPesan.style.backgroundColor = "#f8d7da";
-                kotakPesan.style.color = "#842029";
-                kotakPesan.innerText = "Gagal terhubung ke server.";
-            }
-        }
-
-        // Deteksi tombol Enter (Bagus untuk alat scan otomatis otomatis klik enter)
-        document.getElementById('inputID').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                kirimDataAbsen();
-            }
-        });
-
-        // Fungsi Orang Tua: Cari Nama Anak Realtime Anti-Lag
+        // Fungsi pencarian realtime anti-lag
         function pencarianAbsen() {
             clearTimeout(timerPencarian);
             timerPencarian = setTimeout(() => {
                 eksekusiCariAbsen();
-            }, 250);
+            }, 200);
         }
 
         function eksekusiCariAbsen() {
@@ -162,20 +107,22 @@
             const wadahHasil = document.getElementById('hasilPencarian');
             wadahHasil.innerHTML = "";
 
+            // Jika kolom input kosong atau kurang dari 2 huruf, jangan tampilkan apa pun demi privasi data
             if(kataKunci.length < 2) {
-                return; // Jangan tampilkan apa pun sebelum orang tua mengetik minimal 2 huruf
+                return;
             }
 
             const disaring = semuaSiswa.filter(s => s.Nama && s.Nama.toLowerCase().includes(kataKunci));
 
             if(disaring.length === 0) {
-                wadahHasil.innerHTML = '<p class="loading" style="color: #dc3545;">❌ Nama siswa tidak ditemukan.</p>';
+                wadahHasil.innerHTML = '<p class="loading" style="color: #dc3545;">❌ Nama anak tidak ditemukan. Pastikan ejaan benar.</p>';
                 return;
             }
 
             disaring.forEach(s => {
-                let badgeClass = s.StatusAbsen === "Hadir" ? "status-hadir" : "status-belum";
-                let infoWaktu = s.StatusAbsen === "Hadir" ? ` pukul ${s.WaktuAbsen}` : "";
+                let isHadir = s.StatusAbsen !== "Belum Hadir";
+                let badgeClass = isHadir ? "status-hadir" : "status-belum";
+                let teksStatus = isHadir ? `🟢 Masuk (${s.WaktuAbsen})` : "🟡 Belum Hadir";
                 
                 let item = `<div class="siswa-item">
                     <div class="siswa-info">
@@ -183,14 +130,14 @@
                         <div class="siswa-rombel">Rombel: ${s.RombelSaatIni ?? '-'} | NISN: ${s.NISN ?? '-'}</div>
                     </div>
                     <div>
-                        <span class="status-badge ${badgeClass}">${s.StatusAbsen}${infoWaktu}</span>
+                        <span class="status-badge ${badgeClass}">${teksStatus}</span>
                     </div>
                 </div>`;
                 wadahHasil.innerHTML += item;
             });
         }
 
-        // Jalankan saat halaman dibuka
+        // Jalankan otomatis saat halaman diakses orang tua
         muatDataSiswa();
     </script>
 </body>
