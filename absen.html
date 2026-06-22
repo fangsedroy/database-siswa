@@ -5,79 +5,38 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cek Kehadiran Siswa Mandiri</title>
     <style>
-        html, body { 
-            margin: 0; padding: 0; background-color: #f4f7f6; font-family: Arial, sans-serif; 
-        }
-        .container {
-            max-width: 550px; margin: 0 auto; padding: 20px; box-sizing: border-box;
-        }
+        html, body { margin: 0; padding: 0; background-color: #f4f7f6; font-family: Arial, sans-serif; }
+        .container { max-width: 550px; margin: 0 auto; padding: 20px; box-sizing: border-box; }
         h1 { text-align: center; color: #0d6efd; margin-bottom: 5px; font-size: 24px; }
         .sub-title { text-align: center; color: #666; font-size: 14px; margin-bottom: 25px; }
-        
-        .card {
-            background: white; padding: 25px; border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.06); margin-bottom: 20px;
-        }
-        
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); margin-bottom: 20px; }
         label { font-weight: bold; font-size: 15px; color: #333; display: block; margin-bottom: 10px; }
-        
-        input[type="text"] {
-            width: 100%; padding: 14px; font-size: 16px; border: 2px solid #0d6efd;
-            border-radius: 8px; box-sizing: border-box; outline: none;
-            transition: 0.2s;
-        }
-        input[type="text"]:focus {
-            box-shadow: 0 0 8px rgba(13, 110, 253, 0.3);
-        }
-
-        .siswa-item {
-            border-bottom: 1px solid #eee; padding: 15px 0;
-            display: flex; justify-content: space-between; align-items: center;
-            animation: fadeIn 0.3s ease;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(5px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
+        input[type="text"] { width: 100%; padding: 14px; font-size: 16px; border: 2px solid #0d6efd; border-radius: 8px; box-sizing: border-box; outline: none; }
+        .siswa-item { border-bottom: 1px solid #eee; padding: 15px 0; display: flex; justify-content: space-between; align-items: center; }
         .siswa-info { font-size: 15px; padding-right: 10px; }
         .siswa-nama { font-weight: bold; color: #222; text-transform: uppercase; font-size: 14px; }
         .siswa-rombel { font-size: 12px; color: #777; margin-top: 4px; }
-
-        .status-badge {
-            display: inline-block; padding: 6px 14px; font-weight: bold; border-radius: 20px; font-size: 12.5px;
-            white-space: nowrap;
-        }
+        .status-badge { display: inline-block; padding: 6px 14px; font-weight: bold; border-radius: 20px; font-size: 12.5px; white-space: nowrap; }
         .status-hadir { background-color: #d1e7dd; color: #0f5132; border: 1px solid #badbcc; }
         .status-belum { background-color: #fff3cd; color: #664d03; border: 1px solid #ffe69c; }
-
         .loading { text-align: center; font-size: 15px; color: #666; padding: 20px 0; font-weight: bold; }
         .info-bawah { text-align: center; font-size: 12px; color: #999; margin-top: 20px; }
     </style>
 </head>
 <body>
-
     <div class="container">
         <h1>Monitoring Presensi Siswa</h1>
         <p class="sub-title">Papan Informasi Kehadiran Realtime Sekolah</p>
-
         <div class="card">
-            <label for="cariNamaSiswa">Cari Nama Lengkap Anak:</label>
+            <label for="idCari">Cari Nama Lengkap Anak:</label>
             <input type="text" id="idCari" oninput="pencarianAbsen()" placeholder="Ketik nama anak di sini...">
-            
             <div id="loadingAbsen" class="loading">⏳ Menghubungkan ke server data sekolah...</div>
-            
-            <div id="hasilPencarian">
-                </div>
+            <div id="hasilPencarian"></div>
         </div>
-        
         <p class="info-bawah">Data diperbarui otomatis mengikuti jam masuk sekolah.</p>
     </div>
-
     <script>
-        // ISI DENGAN URL WEB APPS SCRIPT YANG BARU SAJA DI-DEPLOY
-        const API_URL = "https://script.google.com/macros/s/AKfycbyZExGgF28WPsbpLcAuoRx_z8JmDULCA0kdOGo1t_6ugpmDwM9g4L5lY973QuohOEt_-A/exec";
-        
+        const API_URL = "https://script.google.com/macros/s/AKfycbyriKPMKWPzfksVToh7_la4qZvqJmc9zRluUosbOEfOifwadg7Ho_AqVagUtJe99ra3/exec";
         let semuaSiswa = [];
         let timerPencarian;
 
@@ -87,53 +46,42 @@
                 semuaSiswa = await respon.json();
                 document.getElementById('loadingAbsen').style.display = 'none';
             } catch (error) {
-                console.error("Gagal memuat data:", error);
-                document.getElementById('loadingAbsen').innerHTML = "❌ Gagal memuat database sekolah.<br><small style='color:#999; font-weight:normal;'>Pastikan URL Web Apps Script sudah benar dan di-deploy ulang.</small>";
+                console.error(error);
+                document.getElementById('loadingAbsen').innerHTML = "❌ Gagal memuat database sekolah.<br><small style='color:#999; font-weight:normal;'>Pastikan URL Web Apps Script sudah benar.</small>";
             }
         }
 
         function pencarianAbsen() {
             clearTimeout(timerPencarian);
-            timerPencarian = setTimeout(() => {
-                eksekusiCariAbsen();
-            }, 200);
+            timerPencarian = setTimeout(() => { eksekusiCariAbsen(); }, 200);
         }
 
         function eksekusiCariAbsen() {
             const kataKunci = document.getElementById('idCari').value.toLowerCase().trim();
             const wadahHasil = document.getElementById('hasilPencarian');
             wadahHasil.innerHTML = "";
-
-            if(kataKunci.length < 2) {
-                return;
-            }
+            if(kataKunci.length < 2) return;
 
             const disaring = semuaSiswa.filter(s => s.Nama && s.Nama.toLowerCase().includes(kataKunci));
-
             if(disaring.length === 0) {
-                wadahHasil.innerHTML = '<p class="loading" style="color: #dc3545;">❌ Nama anak tidak ditemukan. Pastikan ejaan benar.</p>';
+                wadahHasil.innerHTML = '<p class="loading" style="color: #dc3545;">❌ Nama anak tidak ditemukan.</p>';
                 return;
             }
 
             disaring.forEach(s => {
-                let isHadir = s.StatusAbsen === "Hadir";
+                let isHadir = s.StatusAbsen !== "Belum Hadir";
                 let badgeClass = isHadir ? "status-hadir" : "status-belum";
-                let teksStatus = isHadir ? `🟢 Masuk (${s.WaktuAbsen})` : "🟡 Belum Hadir";
+                let teksStatus = isHadir ? `🟢 ${s.StatusAbsen} (${s.WaktuAbsen})` : "🟡 Belum Hadir";
                 
-                let item = `<div class="siswa-item">
+                wadahHasil.innerHTML += `<div class="siswa-item">
                     <div class="siswa-info">
                         <div class="siswa-nama">${s.Nama}</div>
-                        <div class="siswa-rombel">Rombel: ${s.RombelSaatIni ?? '-'} | NISN: ${s.NISN ?? '-'}</div>
+                        <div class="siswa-rombel">Rombel: ${s.RombelSaatIni} | NISN: ${s.NISN}</div>
                     </div>
-                    <div>
-                        <span class="status-badge ${badgeClass}">${teksStatus}</span>
-                    </div>
+                    <div><span class="status-badge ${badgeClass}">${teksStatus}</span></div>
                 </div>`;
-                wadahHasil.innerHTML += item;
             });
         }
-
-        // Jalankan otomatis
         muatDataSiswa();
     </script>
 </body>
