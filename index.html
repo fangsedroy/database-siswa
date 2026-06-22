@@ -99,9 +99,7 @@
             padding: 20px 0;
         }
 
-        /* ==========================================================================
-           CSS KHUSUS TAMPILAN MOBILE (HP) agar tidak berantakan
-           ========================================================================== */
+        /* CSS KHUSUS TAMPILAN MOBILE (HP) agar tidak berantakan */
         @media screen and (max-width: 600px) {
             .header-content {
                 padding: 15px;
@@ -167,7 +165,7 @@
 
             <div class="filter-group">
                 <label for="cariNama"><b>Cari Nama Siswa:</b> </label>
-                <input type="text" id="cariNama" onkeyup="saringDanCariData()" placeholder="Ketik nama murid...">
+                <input type="text" id="cariNama" oninput="pencarianAntiLag()" placeholder="Ketik nama murid...">
             </div>
         </div>
     </div>
@@ -260,6 +258,7 @@
         const API_URL = "https://script.google.com/macros/s/AKfycbz_Re5eXfrBQmyt2InfGvGDU3Z8yaK2mMo4Sb7cLG2Tbt-Zfeu8rbW1eYS76LtYX9BHaQ/exec"; 
         
         let semuaDataSiswa = [];
+        let timerPencarian; // Variabel penampung waktu jeda pencarian
 
         async function ambilData() {
             try {
@@ -289,10 +288,11 @@
                 return;
             }
 
-            data.forEach(siswa => {
+            // Mempercepat proses pembuatan baris menggunakan Array.map dan join() agar performa HP meningkat
+            const kumpulanBaris = data.map(siswa => {
                 let tglLahir = siswa["Tanggal Lahir"] ? new Date(siswa["Tanggal Lahir"]).toLocaleDateString('id-ID') : '-';
 
-                let baris = `<tr>
+                return `<tr>
                     <td>${siswa.No ?? '-'}</td>
                     <td><b>${siswa.Nama ?? '-'}</b></td>
                     <td>${siswa.NIPD ?? '-'}</td>
@@ -365,8 +365,19 @@
                     <td>${siswa.JmlSaudara ?? '-'}</td>
                     <td>${siswa.JarakSekolah ?? '-'}</td>
                 </tr>`;
-                bodyTabel.innerHTML += baris;
-            });
+            }).join('');
+
+            bodyTabel.innerHTML = kumpulanBaris;
+        }
+
+        // FUNGSI UTAMA ANTI LAG (Debounce)
+        function pencarianAntiLag() {
+            clearTimeout(timerPencarian); // Batalkan pencarian jika user masih mengetik huruf berikutnya
+            
+            // Beri jeda 300ms setelah user berhenti menekan keyboard, baru eksekusi pencarian
+            timerPencarian = setTimeout(() => {
+                saringDanCariData();
+            }, 300); 
         }
 
         function saringDanCariData() {
