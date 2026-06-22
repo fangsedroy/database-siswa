@@ -36,7 +36,9 @@
         <p class="info-bawah">Data diperbarui otomatis mengikuti jam masuk sekolah.</p>
     </div>
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbwirUeBved-NW6Lnie29uhxAVDWKkxASLlLGUPc11l5foRIwb51widCo_wNIi4J2a5b/exec";
+        // MASUKKAN URL WEB APP SCRIPT ANDA YANG SEBELUMNYA DI SINI
+        const API_URL = "https://script.google.com/macros/s/AKfycbzyUIWm9rgUYrObixf7iBa_C0SI0VwpgAhxnuhTac4REF0q7I17iHxCZ7GfbjDvz49u/exec"; 
+        
         let semuaSiswa = [];
         let timerPencarian;
 
@@ -44,10 +46,17 @@
             try {
                 const respon = await fetch(API_URL);
                 semuaSiswa = await respon.json();
+                
+                // Jika server mengirimkan pesan error internal dari sheet kosong
+                if (semuaSiswa.error) {
+                    document.getElementById('loadingAbsen').innerHTML = "⚠️ Data di Sheet1 masih kosong melompati baris. Silakan isi baris siswa terlebih dahulu.";
+                    return;
+                }
+                
                 document.getElementById('loadingAbsen').style.display = 'none';
             } catch (error) {
                 console.error(error);
-                document.getElementById('loadingAbsen').innerHTML = "❌ Gagal memuat database sekolah.<br><small style='color:#999; font-weight:normal;'>Pastikan URL Web Apps Script sudah benar.</small>";
+                document.getElementById('loadingAbsen').innerHTML = "❌ Gagal memuat database sekolah.<br><small style='color:#999;'>Pastikan URL Web Apps Script sudah benar.</small>";
             }
         }
 
@@ -71,12 +80,13 @@
             disaring.forEach(s => {
                 let isHadir = s.StatusAbsen !== "Belum Hadir";
                 let badgeClass = isHadir ? "status-hadir" : "status-belum";
-                let teksStatus = isHadir ? `🟢 ${s.StatusAbsen} (${s.WaktuAbsen})` : "🟡 Belum Hadir";
+                let teksStatus = isHadir ? `🟢 Hadir (${s.WaktuAbsen})` : "🟡 Belum Hadir";
+                let nomorIdentitas = s.NISN || s.NIPD || "-";
                 
                 wadahHasil.innerHTML += `<div class="siswa-item">
                     <div class="siswa-info">
                         <div class="siswa-nama">${s.Nama}</div>
-                        <div class="siswa-rombel">Rombel: ${s.RombelSaatIni} | NISN: ${s.NISN}</div>
+                        <div class="siswa-rombel">Rombel: ${s.RombelSaatIni || '-'} | ID: ${nomorIdentitas}</div>
                     </div>
                     <div><span class="status-badge ${badgeClass}">${teksStatus}</span></div>
                 </div>`;
